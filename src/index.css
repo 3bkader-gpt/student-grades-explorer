@@ -175,20 +175,22 @@ body {
 
 .yara-special-card::before,
 .yara-special-card::after {
-  content: '❤️';
   position: absolute;
-  font-size: 14px;
+  font-size: 16px;
   opacity: 0;
   z-index: -1;
   pointer-events: none;
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
 }
 
 .yara-special-card::before {
+  content: '✨';
   left: 20%;
   animation: heartFly 2s linear infinite;
 }
 
 .yara-special-card::after {
+  content: '🦋';
   right: 25%;
   animation: heartFly 2s linear infinite 1s;
 }
