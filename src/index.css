@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+:root {
+  --charcoal-gray: #30343f;
+  --pale-peach: #f4d0c9;
+  --pastel-pink: #f4c0de;
+  --deep-burgundy: #43022e;
+  --page-bg: #f4d0c9;
+}
+
+:root[data-theme='dark'] {
+  --page-bg: #231a24;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+  direction: rtl;
+}
+
+body {
+  font-family: "Inter", "Cairo", "Segoe UI", sans-serif;
+  background: var(--page-bg);
+  color: var(--charcoal-gray);
+}
+
+.grain-overlay {
+  background-image: radial-gradient(circle at 20% 20%, rgba(244, 192, 222, .18), transparent 35%),
+    radial-gradient(circle at 80% 0%, rgba(67, 2, 46, .18), transparent 30%),
+    radial-gradient(circle at 10% 80%, rgba(48, 52, 63, .16), transparent 40%);
+}
+
+.animated-gradient {
+  background: linear-gradient(120deg, rgba(244, 208, 201, 0.7), rgba(244, 192, 222, 0.45), rgba(67, 2, 46, 0.15));
+  filter: blur(24px);
+  animation: pulseFlow 8s ease-in-out infinite alternate;
+}
+
+.glass-panel {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.74), rgba(255, 255, 255, 0.42));
+  backdrop-filter: blur(18px);
+}
+
+.glass-card {
+  background: linear-gradient(130deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.52));
+  border: 1px solid rgba(48, 52, 63, 0.12);
+  box-shadow: 0 16px 32px rgba(67, 2, 46, 0.08);
+}
+
+.skeleton {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.5), rgba(244, 192, 222, 0.32), rgba(255, 255, 255, 0.5));
+  background-size: 200% 100%;
+  animation: shimmer 1.5s linear infinite;
+}
+
+.empty-state {
+  background: linear-gradient(145deg, rgba(244, 208, 201, 0.45), rgba(244, 192, 222, 0.25));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition-duration: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes pulseFlow {
+  from {
+    transform: translate3d(-4%, -2%, 0) scale(1);
+    opacity: 0.65;
+  }
+  to {
+    transform: translate3d(4%, 2%, 0) scale(1.08);
+    opacity: 1;
+  }
+}
