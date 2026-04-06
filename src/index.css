@@ -59,6 +59,134 @@ body {
   background: linear-gradient(145deg, rgba(244, 208, 201, 0.45), rgba(244, 192, 222, 0.25));
 }
 
+.honor-card {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 18px 35px rgba(0, 0, 0, 0.2);
+  isolation: isolate;
+}
+
+.honor-card::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  filter: blur(18px);
+  opacity: 0.7;
+  animation: glowShift 2.8s ease-in-out infinite alternate;
+}
+
+.honor-gold {
+  background: linear-gradient(140deg, #caa33e, #ffd66b 50%, #8a5f1c);
+}
+
+.honor-gold::before {
+  background: linear-gradient(140deg, rgba(255, 215, 96, 0.7), rgba(142, 100, 27, 0.6));
+}
+
+.honor-silver {
+  background: linear-gradient(140deg, #7a8394, #dce3ef 52%, #5e6676);
+}
+
+.honor-silver::before {
+  background: linear-gradient(140deg, rgba(220, 227, 239, 0.8), rgba(109, 119, 138, 0.55));
+}
+
+.honor-bronze {
+  background: linear-gradient(140deg, #7d4f2a, #cf8a4d 52%, #5b3518);
+}
+
+.honor-bronze::before {
+  background: linear-gradient(140deg, rgba(220, 149, 83, 0.75), rgba(123, 74, 36, 0.6));
+}
+
+.honor-pulse {
+  background: linear-gradient(140deg, rgba(255, 240, 180, 0.96), rgba(255, 214, 107, 0.96));
+  border: 1px solid rgba(120, 80, 20, 0.45);
+  box-shadow:
+    0 0 0 0 rgba(255, 222, 120, 0.6),
+    0 6px 18px rgba(73, 43, 3, 0.26);
+  animation: badgePulse 1.9s ease-in-out infinite;
+}
+
+.special-name {
+  position: relative;
+  z-index: 1;
+  transition: all 0.6s ease-in-out;
+  cursor: pointer;
+  color: #30343f;
+}
+
+.group:hover .special-name {
+  color: #43022e;
+  letter-spacing: 1px;
+}
+
+.special-name::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, rgba(244, 192, 222, 0.4) 0%, transparent 70%);
+  transform: translate(-50%, -50%);
+  transition: width 0.5s ease, height 0.5s ease;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.group:hover .special-name::before {
+  width: 150px;
+  height: 150px;
+}
+
+.special-name::after {
+  content: "✨";
+  position: absolute;
+  top: -10px;
+  right: -14px;
+  font-size: 0.8rem;
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  pointer-events: none;
+}
+
+.group:hover .special-name::after {
+  opacity: 1;
+  transform: scale(1) rotate(360deg);
+}
+
+.yara-special-card {
+  background: linear-gradient(135deg, #f4d0c9 0%, #f4c0de 100%) !important;
+  color: #43022e !important;
+  font-weight: 800;
+  border-radius: 12px;
+  border: 1px solid rgba(67, 2, 46, 0.1);
+  box-shadow: 0 4px 15px rgba(244, 192, 222, 0.4);
+  animation: floatingCard 3s ease-in-out infinite;
+  position: relative;
+  z-index: 10;
+  transform-origin: center;
+}
+
+.yara-special-row {
+  background: linear-gradient(90deg, rgba(244, 208, 201, 0.85), rgba(244, 192, 222, 0.65)) !important;
+}
+
+.grade-text {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  background: #43022e;
+  color: #f4d0c9;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -86,5 +214,52 @@ body {
   to {
     transform: translate3d(4%, 2%, 0) scale(1.08);
     opacity: 1;
+  }
+}
+
+@keyframes glowShift {
+  from {
+    transform: translate3d(-3%, -4%, 0) scale(1);
+    opacity: 0.5;
+  }
+  to {
+    transform: translate3d(2%, 4%, 0) scale(1.04);
+    opacity: 0.85;
+  }
+}
+
+@keyframes badgePulse {
+  0% {
+    box-shadow:
+      0 0 0 0 rgba(255, 222, 120, 0.55),
+      0 6px 18px rgba(73, 43, 3, 0.26);
+    transform: translateZ(0) scale(1);
+  }
+  70% {
+    box-shadow:
+      0 0 0 10px rgba(255, 222, 120, 0),
+      0 8px 20px rgba(73, 43, 3, 0.22);
+    transform: translateZ(0) scale(1.02);
+  }
+  100% {
+    box-shadow:
+      0 0 0 0 rgba(255, 222, 120, 0),
+      0 6px 18px rgba(73, 43, 3, 0.26);
+    transform: translateZ(0) scale(1);
+  }
+}
+
+@keyframes floatingCard {
+  0% {
+    transform: translateY(0px);
+    box-shadow: 0 4px 15px rgba(244, 192, 222, 0.4);
+  }
+  50% {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(244, 192, 222, 0.56);
+  }
+  100% {
+    transform: translateY(0px);
+    box-shadow: 0 4px 15px rgba(244, 192, 222, 0.4);
   }
 }

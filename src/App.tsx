@@ -7,6 +7,10 @@ import type { SortMode, StudentGrade } from './types/grade'
 
 const EXAM_TOTAL = 18
 
+function isSpecialStudent(student: StudentGrade): boolean {
+  return student.number === 136 && student.name.trim() === 'يارا احمد مصطفى' && student.grade === 11
+}
+
 function highlight(text: string, query: string): ReactNode {
   if (!query.trim()) return text
   const queryLower = query.toLowerCase()
@@ -86,6 +90,13 @@ function App() {
   } = store
 
   const searchHint = useMemo(() => (query.trim() ? query.trim() : ''), [query])
+  const topThree = useMemo(
+    () =>
+      [...students]
+        .sort((a, b) => b.grade - a.grade || a.number - b.number)
+        .slice(0, 3),
+    [students],
+  )
 
   const onSearchKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Escape') {
@@ -243,6 +254,71 @@ function App() {
           ))}
         </motion.section>
 
+        <motion.section
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.16 }}
+          className="mt-4"
+        >
+          <div className="mb-2 flex items-center justify-between">
+            <p className="text-sm font-black text-[var(--deep-burgundy)]">Honor Board · Top 3</p>
+            <p className="text-[11px] font-semibold text-[var(--charcoal-gray)]/70">Based on highest grades</p>
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {topThree.map((student, index) => {
+              const rank = index + 1
+              const rankClass =
+                rank === 1 ? 'honor-gold' : rank === 2 ? 'honor-silver' : 'honor-bronze'
+              const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉'
+              return (
+                <motion.article
+                  key={student.number}
+                  whileHover={{ y: -5, rotateX: -4, rotateY: 4 }}
+                  initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 280, damping: 20, delay: 0.08 * rank }}
+                  className={`honor-card ${rankClass} rounded-2xl p-4`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xl" aria-hidden="true">
+                      {medal}
+                    </span>
+                    <span className="rounded-full bg-black/20 px-2 py-1 text-xs font-black text-white">
+                      Rank #{rank}
+                    </span>
+                  </div>
+                  {rank === 1 ? (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.86 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ type: 'spring', stiffness: 300, damping: 16, delay: 0.25 }}
+                      className="mt-2 inline-flex w-fit items-center gap-1 rounded-full honor-pulse px-4 py-1.5 text-sm font-extrabold tracking-wide text-[#2b1a00]"
+                    >
+                      <span className="text-[16px]" aria-hidden="true">
+                        👑
+                      </span>
+                      <span>البابا ☝️☝️</span>
+                    </motion.div>
+                  ) : null}
+                  <p className="mt-3 line-clamp-1 text-base font-black text-white">{student.name}</p>
+                  <div className="mt-2 flex items-center justify-between text-white/95">
+                    <span className="text-xs font-semibold">Code: {student.number}</span>
+                    <motion.span
+                      key={`honor-grade-${student.number}-${student.grade}`}
+                      initial={{ scale: 0.6, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ type: 'spring', stiffness: 320, damping: 16, delay: 0.2 }}
+                      className="rounded-full bg-white/20 px-2 py-1 text-sm font-black"
+                    >
+                      {student.grade}/18
+                    </motion.span>
+                  </div>
+                </motion.article>
+              )
+            })}
+          </div>
+        </motion.section>
+
         <section className="mt-4 flex items-center justify-between gap-2">
           <div className="rounded-xl bg-white/70 p-1 backdrop-blur">
             <button
@@ -321,7 +397,7 @@ function App() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.96 }}
                         transition={{ type: 'spring', stiffness: 280, damping: 22 }}
-                        className={`glass-card text-start rounded-2xl p-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--pastel-pink)] ${student.grade >= passingGrade + 2 ? 'bg-[var(--pastel-pink)]/25' : ''}`}
+                        className={`group glass-card text-start rounded-2xl p-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--pastel-pink)] ${student.grade >= passingGrade + 2 ? 'bg-[var(--pastel-pink)]/25' : ''} ${isSpecialStudent(student) ? 'yara-special-card' : ''}`}
                       >
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-bold opacity-70">#{highlight(String(student.number), searchHint)}</span>
@@ -334,7 +410,7 @@ function App() {
                             {student.grade}
                           </motion.span>
                         </div>
-                        <p className="mt-3 text-base font-black text-[var(--charcoal-gray)]">
+                        <p className={`mt-3 text-base font-black text-[var(--charcoal-gray)] ${isSpecialStudent(student) ? 'special-name' : ''}`}>
                           {highlight(student.name, searchHint)}
                         </p>
                         <span
@@ -363,7 +439,7 @@ function App() {
                             key={student.number}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className={`border-b border-[var(--charcoal-gray)]/10 ${student.grade >= passingGrade + 2 ? 'bg-[var(--pastel-pink)]/30' : ''}`}
+                            className={`group border-b border-[var(--charcoal-gray)]/10 ${student.grade >= passingGrade + 2 ? 'bg-[var(--pastel-pink)]/30' : ''} ${isSpecialStudent(student) ? 'yara-special-row' : ''}`}
                           >
                             <td className="px-4 py-3 font-semibold">
                               <button
@@ -376,8 +452,18 @@ function App() {
                                 {highlight(String(student.number), searchHint)}
                               </button>
                             </td>
-                            <td className="px-4 py-3 font-bold">{highlight(student.name, searchHint)}</td>
-                            <td className="px-4 py-3 font-black text-[var(--deep-burgundy)]">{student.grade}</td>
+                            <td className="px-4 py-3 font-bold">
+                              <span className={isSpecialStudent(student) ? 'special-name inline-block' : ''}>
+                                {highlight(student.name, searchHint)}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 font-black text-[var(--deep-burgundy)]">
+                              {isSpecialStudent(student) ? (
+                                <span className="grade-text">{student.grade}</span>
+                              ) : (
+                                student.grade
+                              )}
+                            </td>
                             <td className="px-4 py-3 text-xs font-bold">
                               {student.grade >= passingGrade ? 'Pass' : 'Fail'}
                             </td>
