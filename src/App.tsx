@@ -410,7 +410,7 @@ function App() {
                             {student.grade}
                           </motion.span>
                         </div>
-                        <p className={`mt-3 text-base font-black text-[var(--charcoal-gray)] ${isSpecialStudent(student) ? 'special-name' : ''}`}>
+                        <p className={`mt-3 text-base font-black text-[var(--charcoal-gray)] ${isSpecialStudent(student) ? 'special-name student-name' : ''}`}>
                           {highlight(student.name, searchHint)}
                         </p>
                         <span
@@ -453,7 +453,7 @@ function App() {
                               </button>
                             </td>
                             <td className="px-4 py-3 font-bold">
-                              <span className={isSpecialStudent(student) ? 'special-name inline-block' : ''}>
+                              <span className={isSpecialStudent(student) ? 'special-name student-name inline-block' : ''}>
                                 {highlight(student.name, searchHint)}
                               </span>
                             </td>
