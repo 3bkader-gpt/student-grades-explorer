@@ -11,6 +11,15 @@ function isSpecialStudent(student: StudentGrade): boolean {
   return student.number === 136 && student.name.trim() === 'يارا احمد مصطفى' && student.grade === 11
 }
 
+const SORT_OPTIONS: { value: SortMode; label: string }[] = [
+  { value: 'grade-desc', label: 'Grade · High first' },
+  { value: 'grade-asc', label: 'Grade · Low first' },
+  { value: 'name-asc', label: 'Name · A → Z' },
+  { value: 'name-desc', label: 'Name · Z → A' },
+  { value: 'number-asc', label: 'Code · ascending' },
+  { value: 'number-desc', label: 'Code · descending' },
+]
+
 function highlight(text: string, query: string): ReactNode {
   if (!query.trim()) return text
   const queryLower = query.toLowerCase()
@@ -160,6 +169,10 @@ function App() {
     addAudit('Saved current view to localStorage')
   }
 
+  const gradeSpan = Math.max(gradeMax - gradeMin, 1)
+  const rangeFillStart = ((rangeMin - gradeMin) / gradeSpan) * 100
+  const rangeFillWidth = ((rangeMax - rangeMin) / gradeSpan) * 100
+
   return (
     <div className="min-h-screen bg-[var(--page-bg)] text-[var(--charcoal-gray)]">
       <div className="pointer-events-none fixed inset-0 grain-overlay" />
@@ -203,32 +216,41 @@ function App() {
               />
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <button
+            <div className="neo-filter-toolbar flex flex-wrap items-center gap-2 rounded-2xl px-3 py-2.5 sm:gap-3 sm:px-4">
+              <motion.button
                 type="button"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => setShowAdvanced(true)}
-                className="rounded-xl bg-[var(--deep-burgundy)] px-4 py-2 text-sm font-bold text-white transition hover:translate-y-[-1px]"
+                className="neo-filter-chip-btn flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-black text-white"
               >
-                Advanced Filters
-              </button>
-              <span className="rounded-full border border-[var(--charcoal-gray)]/20 bg-white/60 px-3 py-1 text-xs font-semibold">
-                {activeFilterCount} filters active
+                <span className="text-base" aria-hidden="true">
+                  ◈
+                </span>
+                <span>Advanced Filters</span>
+              </motion.button>
+              <span className="neo-badge-live inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-extrabold text-[var(--deep-burgundy)]">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/80" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                </span>
+                {activeFilterCount} active
               </span>
               <button
                 type="button"
                 onClick={() => {
                   clearAllFilters()
                 }}
-                className="rounded-xl border border-[var(--charcoal-gray)]/20 bg-white/60 px-3 py-2 text-xs font-semibold"
+                className="neo-ghost-btn rounded-xl px-3 py-2 text-xs font-extrabold text-[var(--charcoal-gray)]"
               >
                 Clear all
               </button>
               <button
                 type="button"
                 onClick={onSaveView}
-                className="rounded-xl border border-[var(--charcoal-gray)]/20 bg-white/60 px-3 py-2 text-xs font-semibold"
+                className="neo-ghost-btn rounded-xl px-3 py-2 text-xs font-extrabold text-[var(--deep-burgundy)]"
               >
-                Save current view
+                Save view
               </button>
             </div>
           </div>
@@ -319,43 +341,54 @@ function App() {
           </div>
         </motion.section>
 
-        <section className="mt-4 flex items-center justify-between gap-2">
-          <div className="rounded-xl bg-white/70 p-1 backdrop-blur">
-            <button
-              type="button"
-              onClick={() => {
-                setViewMode('cards')
-                addAudit('Switched to card mode')
-              }}
-              className={`rounded-lg px-3 py-2 text-sm font-bold ${viewMode === 'cards' ? 'bg-[var(--deep-burgundy)] text-white' : ''}`}
-            >
-              Cards
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setViewMode('table')
-                addAudit('Switched to table mode')
-              }}
-              className={`rounded-lg px-3 py-2 text-sm font-bold ${viewMode === 'table' ? 'bg-[var(--deep-burgundy)] text-white' : ''}`}
-            >
-              Table
-            </button>
+        <section className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="neo-view-switch shrink-0">
+            {(['cards', 'table'] as const).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => {
+                  setViewMode(mode)
+                  addAudit(mode === 'cards' ? 'Switched to card mode' : 'Switched to table mode')
+                }}
+                className="neo-view-btn relative"
+                data-on={viewMode === mode}
+              >
+                {viewMode === mode ? (
+                  <motion.div
+                    layoutId="explorerViewPill"
+                    className="absolute inset-0 rounded-[0.9rem] bg-gradient-to-br from-[var(--deep-burgundy)] to-[#5c083f] shadow-[0_6px_18px_rgba(67,2,46,0.35)]"
+                    transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+                  />
+                ) : null}
+                <span className="relative z-10">{mode === 'cards' ? 'Cards' : 'Table'}</span>
+              </button>
+            ))}
           </div>
 
-          <select
-            value={sortMode}
-            onChange={(event) => onSortChange(event.target.value as SortMode)}
-            className="rounded-xl border border-[var(--charcoal-gray)]/20 bg-white/70 px-3 py-2 text-sm font-semibold"
-            aria-label="Sorting mode"
-          >
-            <option value="grade-desc">Grade (High → Low)</option>
-            <option value="grade-asc">Grade (Low → High)</option>
-            <option value="name-asc">Name (A → Z)</option>
-            <option value="name-desc">Name (Z → A)</option>
-            <option value="number-asc">Code (Asc)</option>
-            <option value="number-desc">Code (Desc)</option>
-          </select>
+          <div className="min-w-0 flex-1">
+            <p className="neo-field-label mb-2 px-1">Sort results</p>
+            <div className="neo-sort-bar grid grid-cols-2 gap-1 sm:grid-cols-3">
+              {SORT_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  data-active={sortMode === opt.value}
+                  onClick={() => onSortChange(opt.value)}
+                  className="neo-sort-btn text-start"
+                >
+                  {sortMode === opt.value ? (
+                    <motion.div
+                      layoutId="explorerSortPill"
+                      className="absolute inset-0 rounded-[0.85rem] bg-gradient-to-br from-[var(--deep-burgundy)] to-[#6b0d4a] shadow-[0_4px_14px_rgba(67,2,46,0.35)]"
+                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    />
+                  ) : null}
+                  <span className="relative z-10">{opt.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         </section>
 
         <section className="mt-4">
@@ -488,126 +521,200 @@ function App() {
 
       <AnimatePresence>
         {showAdvanced ? (
-          <motion.aside
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 24 }}
-            className="fixed inset-x-3 bottom-3 z-50 rounded-3xl border border-[var(--charcoal-gray)]/20 bg-white/90 p-4 shadow-2xl backdrop-blur-xl lg:inset-y-4 lg:right-4 lg:left-auto lg:w-[360px]"
+          <motion.div
+            key="filters-overlay"
+            className="fixed inset-0 z-40 flex items-end justify-center p-3 lg:items-stretch lg:justify-end lg:p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
           >
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-sm font-black text-[var(--deep-burgundy)]">Advanced Filters</h2>
-              <button
-                type="button"
-                onClick={() => setShowAdvanced(false)}
-                className="rounded-lg px-2 py-1 text-xs font-bold"
-              >
-                Close
-              </button>
-            </div>
+            <button
+              type="button"
+              aria-label="Close filters"
+              className="neo-filter-backdrop absolute inset-0 lg:bg-black/25"
+              onClick={() => setShowAdvanced(false)}
+            />
+            <motion.aside
+              initial={{ opacity: 0, y: 28, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 28, scale: 0.98 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+              className="neo-filter-panel relative z-10 w-full max-h-[min(88vh,560px)] overflow-y-auto rounded-3xl p-4 lg:max-h-[calc(100vh-2rem)] lg:w-[400px]"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="advanced-filters-title"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="mb-4 flex items-start justify-between gap-2 border-b border-[var(--charcoal-gray)]/10 pb-3">
+                <div>
+                  <p className="neo-field-label mb-1">Control panel</p>
+                  <h2 id="advanced-filters-title" className="text-lg font-black text-[var(--deep-burgundy)]">
+                    Advanced Filters
+                  </h2>
+                  <p className="mt-1 text-[11px] font-medium text-[var(--charcoal-gray)]/65">
+                    Narrow the list — changes apply instantly.
+                  </p>
+                </div>
+                <motion.button
+                  type="button"
+                  whileTap={{ scale: 0.94 }}
+                  onClick={() => setShowAdvanced(false)}
+                  className="neo-ghost-btn shrink-0 rounded-xl px-3 py-2 text-xs font-extrabold text-[var(--deep-burgundy)]"
+                >
+                  Done
+                </motion.button>
+              </div>
 
-            <div className="space-y-4">
-              <div>
-                <p className="mb-2 text-xs font-bold">Grade range</p>
-                <div className="space-y-2">
-                  <input
-                    type="range"
-                    min={gradeMin}
-                    max={gradeMax}
-                    value={rangeMin}
-                    onChange={(event) => updateRangeMin(Number(event.target.value))}
-                    className="w-full"
-                    aria-label="Minimum grade"
-                  />
-                  <input
-                    type="range"
-                    min={gradeMin}
-                    max={gradeMax}
-                    value={rangeMax}
-                    onChange={(event) => updateRangeMax(Number(event.target.value))}
-                    className="w-full"
-                    aria-label="Maximum grade"
-                  />
-                  <div className="grid grid-cols-2 gap-2">
-                    <input
-                      value={rangeMin}
-                      onChange={(event) => updateRangeMin(Number(event.target.value))}
-                      type="number"
-                      className="rounded-lg border border-[var(--charcoal-gray)]/20 px-3 py-2 text-sm"
-                      aria-label="Range minimum input"
-                    />
-                    <input
-                      value={rangeMax}
-                      onChange={(event) => updateRangeMax(Number(event.target.value))}
-                      type="number"
-                      className="rounded-lg border border-[var(--charcoal-gray)]/20 px-3 py-2 text-sm"
-                      aria-label="Range maximum input"
-                    />
+              <div className="space-y-3">
+                <div className="neo-field-card">
+                  <div className="mb-3 flex items-center justify-between gap-2">
+                    <span className="neo-field-label">Grade spectrum</span>
+                    <span className="rounded-full bg-[var(--pastel-pink)]/40 px-2 py-0.5 text-[11px] font-black text-[var(--deep-burgundy)]">
+                      {rangeMin} — {rangeMax}
+                    </span>
+                  </div>
+                  <div dir="ltr" className="relative pb-1">
+                    <div className="neo-range-track">
+                      <div
+                        className="neo-range-fill"
+                        style={{
+                          insetInlineStart: `${rangeFillStart}%`,
+                          width: `${rangeFillWidth}%`,
+                        }}
+                      />
+                    </div>
+                    <div className="relative -mt-2 h-10">
+                      <input
+                        type="range"
+                        min={gradeMin}
+                        max={gradeMax}
+                        value={rangeMin}
+                        onChange={(event) => updateRangeMin(Number(event.target.value))}
+                        className="neo-range absolute inset-x-0 top-0 h-10 w-full"
+                        aria-label="Minimum grade"
+                      />
+                      <input
+                        type="range"
+                        min={gradeMin}
+                        max={gradeMax}
+                        value={rangeMax}
+                        onChange={(event) => updateRangeMax(Number(event.target.value))}
+                        className="neo-range absolute inset-x-0 top-0 z-10 h-10 w-full"
+                        aria-label="Maximum grade"
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    <label className="flex flex-col gap-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wide text-[var(--charcoal-gray)]/55">Min</span>
+                      <input
+                        value={rangeMin}
+                        onChange={(event) => updateRangeMin(Number(event.target.value))}
+                        type="number"
+                        className="neo-num-input w-full px-3 py-2 text-sm"
+                        aria-label="Range minimum input"
+                      />
+                    </label>
+                    <label className="flex flex-col gap-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wide text-[var(--charcoal-gray)]/55">Max</span>
+                      <input
+                        value={rangeMax}
+                        onChange={(event) => updateRangeMax(Number(event.target.value))}
+                        type="number"
+                        className="neo-num-input w-full px-3 py-2 text-sm"
+                        aria-label="Range maximum input"
+                      />
+                    </label>
                   </div>
                 </div>
-              </div>
 
-              <div>
-                <p className="mb-2 text-xs font-bold">Status</p>
-                <div className="flex gap-2">
-                  <motion.button
-                    whileTap={{ scale: 0.96 }}
-                    type="button"
-                    onClick={onTogglePass}
-                    className={`rounded-full px-3 py-2 text-xs font-bold ${passEnabled ? 'bg-emerald-100 text-emerald-900' : 'bg-zinc-100'}`}
+                <div className="neo-field-card">
+                  <span className="neo-field-label mb-3 block">Result status</span>
+                  <div className="neo-segment">
+                    <motion.button
+                      whileTap={{ scale: 0.98 }}
+                      type="button"
+                      onClick={onTogglePass}
+                      className="neo-segment-btn"
+                      data-on={passEnabled}
+                      data-tone="pass"
+                    >
+                      {passEnabled ? <span className="neo-segment-pill" aria-hidden="true" /> : null}
+                      <span className="relative z-10">Pass</span>
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.98 }}
+                      type="button"
+                      onClick={onToggleFail}
+                      className="neo-segment-btn"
+                      data-on={failEnabled}
+                      data-tone="fail"
+                    >
+                      {failEnabled ? <span className="neo-segment-pill" aria-hidden="true" /> : null}
+                      <span className="relative z-10">Fail</span>
+                    </motion.button>
+                  </div>
+                </div>
+
+                <div className="neo-field-card">
+                  <span className="neo-field-label mb-3 block">Passing threshold</span>
+                  <p className="mb-3 text-[11px] font-medium text-[var(--charcoal-gray)]/65">
+                    Out of {EXAM_TOTAL} — used for Pass / Fail badges.
+                  </p>
+                  <div className="neo-stepper">
+                    <button
+                      type="button"
+                      aria-label="Decrease passing grade"
+                      onClick={() => {
+                        const value = Math.max(0, passingGrade - 1)
+                        setPassingGrade(value)
+                        addAudit(`Passing grade set to ${value}`)
+                      }}
+                    >
+                      −
+                    </button>
+                    <span className="neo-stepper-display" aria-live="polite">
+                      {passingGrade}
+                    </span>
+                    <button
+                      type="button"
+                      aria-label="Increase passing grade"
+                      onClick={() => {
+                        const value = Math.min(EXAM_TOTAL, passingGrade + 1)
+                        setPassingGrade(value)
+                        addAudit(`Passing grade set to ${value}`)
+                      }}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                <div className="neo-field-card">
+                  <label className="neo-field-label mb-2 block" htmlFor="exact-grade">
+                    Exact grade match
+                  </label>
+                  <select
+                    id="exact-grade"
+                    value={exactGrade}
+                    onChange={(event) => {
+                      setExactGrade(event.target.value)
+                      addAudit(`Exact grade filter ${event.target.value}`)
+                    }}
+                    className="neo-select"
                   >
-                    Pass
-                  </motion.button>
-                  <motion.button
-                    whileTap={{ scale: 0.96 }}
-                    type="button"
-                    onClick={onToggleFail}
-                    className={`rounded-full px-3 py-2 text-xs font-bold ${failEnabled ? 'bg-rose-100 text-rose-900' : 'bg-zinc-100'}`}
-                  >
-                    Fail
-                  </motion.button>
+                    <option value="any">Any grade</option>
+                    {distinctGrades.map((grade) => (
+                      <option key={grade} value={grade}>
+                        {grade}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
-
-              <div>
-                <label className="mb-2 block text-xs font-bold" htmlFor="passing-grade">
-                  Passing grade (out of {EXAM_TOTAL})
-                </label>
-                <input
-                  id="passing-grade"
-                  type="number"
-                  value={passingGrade}
-                  onChange={(event) => {
-                    const value = Math.max(0, Math.min(EXAM_TOTAL, Number(event.target.value) || 0))
-                    setPassingGrade(value)
-                    addAudit(`Passing grade set to ${value}`)
-                  }}
-                  className="w-full rounded-lg border border-[var(--charcoal-gray)]/20 px-3 py-2 text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-xs font-bold" htmlFor="exact-grade">
-                  Exact grade
-                </label>
-                <select
-                  id="exact-grade"
-                  value={exactGrade}
-                  onChange={(event) => {
-                    setExactGrade(event.target.value)
-                    addAudit(`Exact grade filter ${event.target.value}`)
-                  }}
-                  className="w-full rounded-lg border border-[var(--charcoal-gray)]/20 px-3 py-2 text-sm"
-                >
-                  <option value="any">Any grade</option>
-                  {distinctGrades.map((grade) => (
-                    <option key={grade} value={grade}>
-                      {grade}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </motion.aside>
+            </motion.aside>
+          </motion.div>
         ) : null}
       </AnimatePresence>
     </div>
